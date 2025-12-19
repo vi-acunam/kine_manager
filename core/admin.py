@@ -1,19 +1,31 @@
 from django.contrib import admin
-from .models import Paciente, Kinesiologo, Tratamiento, Cita, FichaEvolucion
+from .models import Clinica, PerfilUsuario, Paciente, Tratamiento, Cita
 
-# Configuración avanzada para ver mejor las tablas
-@admin.register(Cita)
-class CitaAdmin(admin.ModelAdmin):
-    list_display = ('paciente', 'kinesiologo', 'fecha_hora', 'estado', 'numero_sesion')
-    list_filter = ('estado', 'fecha_hora', 'kinesiologo')
-    search_fields = ('paciente__nombre_completo',)
+# 1. Administrar las Clínicas
+@admin.register(Clinica)
+class ClinicaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'direccion', 'creado_en')
+    search_fields = ('nombre',)
 
+# 2. Administrar los Usuarios (Ex-Kinesiólogos)
+@admin.register(PerfilUsuario)
+class PerfilUsuarioAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'clinica', 'es_administrador')
+    list_filter = ('clinica',)
+
+# 3. Administrar Pacientes (Con filtro por clínica)
 @admin.register(Paciente)
 class PacienteAdmin(admin.ModelAdmin):
-    list_display = ('nombre_completo', 'rut', 'telefono')
-    search_fields = ('nombre_completo', 'rut')
+    list_display = ('nombre', 'rut', 'clinica')
+    list_filter = ('clinica',) # ¡Vital para el SaaS!
+    search_fields = ('nombre', 'rut')
 
-# Registro simple de los demás
-admin.site.register(Kinesiologo)
-admin.site.register(Tratamiento)
-admin.site.register(FichaEvolucion)
+@admin.register(Tratamiento)
+class TratamientoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'precio', 'clinica')
+    list_filter = ('clinica',)
+
+@admin.register(Cita)
+class CitaAdmin(admin.ModelAdmin):
+    list_display = ('paciente', 'fecha', 'hora', 'estado', 'clinica')
+    list_filter = ('clinica', 'fecha', 'estado')
