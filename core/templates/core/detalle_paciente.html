@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha: {{ paciente.nombre_completo }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'lista_pacientes' %}">⬅ Volver a la Lista</a>
+            <span class="navbar-text text-white">Ficha Clínica Digital</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">Datos Personales</h5>
+                    </div>
+                    <div class="card-body">
+                        <h3>{{ paciente.nombre_completo }}</h3>
+                        <span class="badge bg-info text-dark mb-3">{{ paciente.institucion|default:"Particular" }}</span>
+                        <hr>
+
+                        <p class="mb-1"><strong>RUT:</strong> {{ paciente.rut }}</p>
+                        <p class="mb-1"><strong>Edad:</strong> {{ paciente.fecha_nacimiento|timesince }}</p>
+                        <p class="mb-1"><strong>Ocupación:</strong> {{ paciente.ocupacion|default:"No especificada" }}</p>
+                        <p class="mb-1"><strong>Deporte:</strong> {{ paciente.deporte|default:"Sedentario" }}</p>
+
+                        <hr>
+
+                        <p class="mb-1"><strong>📞 Teléfono:</strong> <a href="tel:{{ paciente.telefono }}">{{ paciente.telefono }}</a></p>
+                        <p class="mb-1"><strong>📧 Email:</strong> {{ paciente.email|default:"No registrado" }}</p>
+                        <p class="mb-1"><strong>📍 Dirección:</strong> {{ paciente.direccion|default:"No registrada" }}</p>
+
+                        <div class="alert alert-secondary mt-3">
+                            <strong>🩺 Diagnóstico Ingreso:</strong><br> {{ paciente.diagnostico_ingreso|default:"En evaluación" }}
+                        </div>
+
+                        <div class="alert alert-warning mt-2">
+                            <strong>⚠ Antecedentes:</strong><br> {{ paciente.antecedentes_medicos|default:"Sin antecedentes" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <h4 class="mb-3">Historial de Tratamientos</h4>
+
+                {% for cita in historial %}
+                <div class="card mb-3 shadow-sm border-start border-4 
+                            {% if cita.estado == 'FINALIZADA' %}border-success{% else %}border-primary{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title text-primary">
+                                {{ cita.fecha_hora|date:"d M Y - H:i" }}
+                                <span class="badge bg-secondary ms-2">{{ cita.get_estado_display }}</span>
+                            </h5>
+                            <small class="text-muted">Sesión {{ cita.numero_sesion }}</small>
+                        </div>
+
+                        <p class="mb-1"><strong>Tratamiento:</strong> {{ cita.tratamiento.nombre }}</p>
+                        <p class="mb-2"><strong>Kinesiólogo:</strong> {{ cita.kinesiologo }}</p>
+
+                        {% if cita.fichaevolucion %}
+                        <div class="bg-light p-3 rounded mt-3">
+                            <h6>📝 Evolución Clínica (SOAP):</h6>
+                            <p class="mb-1"><strong>S/O:</strong> {{ cita.fichaevolucion.subjetivo }} | {{ cita.fichaevolucion.objetivo }}</p>
+                            <p class="mb-0">
+                                <strong>Dolor (EVA):</strong>
+                                <span class="badge {% if cita.fichaevolucion.nivel_dolor_eva > 6 %}bg-danger{% else %}bg-success{% endif %}">
+                                        {{ cita.fichaevolucion.nivel_dolor_eva }}/10
+                                    </span>
+                            </p>
+                        </div>
+                        {% else %} {% if cita.estado == 'AGENDADA' %}
+                        <div class="mt-2 text-muted fst-italic">
+                            * Paciente aún no ha sido atendido.
+                        </div>
+                        {% endif %} {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="alert alert-info">
+                    Este paciente no tiene historial de citas.
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

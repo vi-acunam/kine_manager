@@ -1,0 +1,14 @@
+<h1>Panel de Control - {{ fecha_hoy }}</h1>
+
+<div style="background-color: #ffebee; padding: 20px; border-radius: 8px;">
+    <h2>⚠ Alertas de Dolor Alto ({{ cantidad_criticos }})</h2>
+    <ul>
+        {% for ficha in alertas %}
+        <li>
+            <strong>{{ ficha.cita.paciente.nombre_completo }}</strong> reportó nivel {{ ficha.nivel_dolor_eva }} (Kine: {{ ficha.cita.kinesiologo }})
+        </li>
+        {% empty %}
+        <li>No hay pacientes con dolor crítico hoy.</li>
+        {% endfor %}
+    </ul>
+</div>
