@@ -21,8 +21,14 @@ def obtener_clinica_usuario(user):
 # --- VISTAS ---
 
 def redireccion_home(request):
-    """Redirige la página de inicio (/) directamente a la lista de pacientes"""
-    return redirect('lista_pacientes')
+    """
+    Si el usuario ya entró -> Mándalo directo a sus pacientes.
+    Si no ha entrado -> Mándalo al Login.
+    """
+    if request.user.is_authenticated:
+        return redirect('lista_pacientes')
+    else:
+        return redirect('login')
 
 @login_required
 def lista_pacientes(request):

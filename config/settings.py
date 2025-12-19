@@ -150,3 +150,11 @@ JAZZMIN_SETTINGS = {
         "core.FichaEvolucion": "fas fa-file-medical-alt",  # Icono ficha
     },
 }
+
+LOGIN_URL = 'login' 
+
+# Cuando logre entrar, mándame aquí:
+LOGIN_REDIRECT_URL = 'lista_pacientes'
+
+# Cuando cierre sesión, mándame aquí:
+LOGOUT_REDIRECT_URL = 'login'

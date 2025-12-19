@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar Sesión - KineManager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h4 class="mb-0">👋 Bienvenido de nuevo</h4>
+                    </div>
+                    <div class="card-body p-4">
+
+                        <form method="post">
+                            {% csrf_token %} {% if form.errors %}
+                            <div class="alert alert-danger text-center">
+                                Usuario o contraseña incorrectos
+                            </div>
+                            {% endif %}
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Usuario</label>
+                                <input type="text" name="username" class="form-control" placeholder="Ej: kine_admin" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Contraseña</label>
+                                <input type="password" name="password" class="form-control" placeholder="••••••" required>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Ingresar</button>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <div class="text-center">
+                            <p class="mb-1">¿Aún no tienes cuenta?</p>
+                            <a href="{% url 'registro' %}" class="btn btn-outline-success w-100 fw-bold">🚀 Crear Clínica Gratis</a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

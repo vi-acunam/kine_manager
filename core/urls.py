@@ -1,10 +1,21 @@
 from django.urls import path
-from .views import registro_saas, lista_pacientes, detalle_paciente, redireccion_home
+from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('', redireccion_home, name='home'),
-    path('pacientes/', lista_pacientes, name='lista_pacientes'),
-    path('registro/', registro_saas, name='registro'),
-    # NUEVA LÍNEA: <int:paciente_id> captura el número (1, 2, 50, etc.)
-    path('pacientes/<int:paciente_id>/', detalle_paciente, name='detalle_paciente'),
+    # 1. Ruta inteligente: Si entras a la raíz, decide si vas al login o a la app
+    path('', views.redireccion_home, name='home'),
+
+    # 2. El Login (Usamos la vista nativa de Django pero con nuestro HTML)
+    path('login/', auth_views.LoginView.as_view(template_name='core/login.html'), name='login'),
+    
+    # 3. El Logout (Cerrar sesión)
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # 4. Registro (La que creamos en el mensaje anterior)
+    path('registro/', views.registro_saas, name='registro'),
+
+    # 5. La App
+    path('pacientes/', views.lista_pacientes, name='lista_pacientes'),
+    path('pacientes/<int:paciente_id>/', views.detalle_paciente, name='detalle_paciente'),
 ]
