@@ -18,4 +18,5 @@ urlpatterns = [
     # 5. La App
     path('pacientes/', views.lista_pacientes, name='lista_pacientes'),
     path('pacientes/<int:paciente_id>/', views.detalle_paciente, name='detalle_paciente'),
+    path('pacientes/nuevo/', views.crear_paciente, name='crear_paciente'),
 ]

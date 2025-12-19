@@ -7,6 +7,28 @@ from django.contrib.auth import login                  # <--- ¿Tienes esta?
 from django.contrib.auth.models import User            # <--- ¿Tienes esta?
 from .models import Paciente, Cita, Tratamiento, Clinica, PerfilUsuario
 from .forms import RegistroSaaSForm
+from .forms import PacienteForm # <--- Importa el nuevo form
+
+@login_required
+def crear_paciente(request):
+    if request.method == 'POST':
+        form = PacienteForm(request.POST)
+        if form.is_valid():
+            paciente = form.save(commit=False) # Pausa la guardada un segundo
+            
+            # ASIGNACIÓN AUTOMÁTICA SAAS
+            # Le asignamos la clínica del usuario que está creando al paciente
+            paciente.clinica = obtener_clinica_usuario(request.user)
+            
+            paciente.save() # Ahora sí guardamos definitivamente
+            return redirect('lista_pacientes')
+    else:
+        form = PacienteForm()
+
+    return render(request, 'core/crear_paciente.html', {'form': form})
+
+
+
 
 # --- FUNCIÓN AUXILIAR (La clave del SaaS) ---
 def obtener_clinica_usuario(user):
