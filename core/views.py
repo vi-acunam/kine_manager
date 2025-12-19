@@ -2,7 +2,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from datetime import date
-from .models import Paciente, Cita, Tratamiento
+# --- IMPORTACIONES NUEVAS QUE SUELEN FALTAR ---
+from django.contrib.auth import login                  # <--- ¿Tienes esta?
+from django.contrib.auth.models import User            # <--- ¿Tienes esta?
+from .models import Paciente, Cita, Tratamiento, Clinica, PerfilUsuario
 from .forms import RegistroSaaSForm
 
 # --- FUNCIÓN AUXILIAR (La clave del SaaS) ---
