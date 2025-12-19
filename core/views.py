@@ -2,10 +2,30 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Paciente
 from django.shortcuts import redirect
+from django.db.models import Sum
+from datetime import date
 
 def lista_pacientes(request):
     pacientes = Paciente.objects.all().order_by('-id')
-    return render(request, 'core/lista_pacientes.html', {'pacientes': pacientes})
+    
+    # --- LÓGICA DE CAJA ---
+    hoy = date.today()
+    
+    # Sumamos el precio de los tratamientos de las citas de HOY
+    # (Solo sumamos si la cita NO está anulada)
+    caja_hoy = Cita.objects.filter(
+        fecha_hora__date=hoy
+    ).exclude(estado='ANULADA').aggregate(Sum('tratamiento__precio'))
+    
+    # Si no hay ventas, el resultado es None, así que lo convertimos a 0
+    total_recaudado = caja_hoy['tratamiento__precio__sum'] or 0
+
+    context = {
+        'pacientes': pacientes,
+        'total_recaudado': total_recaudado, # Enviamos el dato al HTML
+        'fecha_hoy': hoy
+    }
+    return render(request, 'core/lista_pacientes.html', context)
 
 # --- NUEVA FUNCIÓN ---
 def detalle_paciente(request, paciente_id):
