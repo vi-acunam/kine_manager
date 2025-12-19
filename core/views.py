@@ -1,46 +1,78 @@
-# Asegúrate de importar get_object_or_404
-from django.shortcuts import render, get_object_or_404
-from .models import Paciente, Cita, Tratamiento
-from django.shortcuts import redirect
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from datetime import date
+from .models import Paciente, Cita, Tratamiento
 
+# --- FUNCIÓN AUXILIAR (La clave del SaaS) ---
+def obtener_clinica_usuario(user):
+    """
+    Intenta obtener la clínica asociada al usuario logueado.
+    Si es un superusuario antiguo sin perfil, podría dar error,
+    así que manejamos la excepción.
+    """
+    try:
+        return user.perfil.clinica
+    except AttributeError:
+        # Esto pasa si el usuario (ej: admin) no tiene creado su 'PerfilUsuario'
+        return None
+
+# --- VISTAS ---
+
+def redireccion_home(request):
+    """Redirige la página de inicio (/) directamente a la lista de pacientes"""
+    return redirect('lista_pacientes')
+
+@login_required
 def lista_pacientes(request):
-    pacientes = Paciente.objects.all().order_by('-id')
+    # 1. Identificar la clínica del usuario
+    mi_clinica = obtener_clinica_usuario(request.user)
     
-    # --- LÓGICA DE CAJA ---
+    # Seguridad: Si el usuario no tiene clínica asignada, no mostramos nada
+    if not mi_clinica:
+        return render(request, 'core/error.html', {
+            'mensaje': 'Tu usuario no tiene una clínica asignada. Contacta al soporte.'
+        })
+
+    # 2. FILTRO SAAS: Solo traemos pacientes de ESTA clínica
+    pacientes = Paciente.objects.filter(clinica=mi_clinica).order_by('-id')
+
+    # 3. LÓGICA FINANCIERA (Caja Diaria)
     hoy = date.today()
     
     # Sumamos el precio de los tratamientos de las citas de HOY
-    # (Solo sumamos si la cita NO está anulada)
+    # Filtramos por clínica + fecha + estado (no anulada)
     caja_hoy = Cita.objects.filter(
-        fecha_hora__date=hoy
+        clinica=mi_clinica,
+        fecha=hoy
     ).exclude(estado='ANULADA').aggregate(Sum('tratamiento__precio'))
-    
-    # Si no hay ventas, el resultado es None, así que lo convertimos a 0
+
+    # Si la suma es None (no hay citas), la convertimos a 0
     total_recaudado = caja_hoy['tratamiento__precio__sum'] or 0
 
     context = {
         'pacientes': pacientes,
-        'total_recaudado': total_recaudado, # Enviamos el dato al HTML
-        'fecha_hoy': hoy
+        'total_recaudado': total_recaudado,
+        'fecha_hoy': hoy,
+        'nombre_clinica': mi_clinica.nombre # Para mostrarlo en el título si quieres
     }
     return render(request, 'core/lista_pacientes.html', context)
 
-# --- NUEVA FUNCIÓN ---
+@login_required
 def detalle_paciente(request, paciente_id):
-    # 1. Buscamos al paciente por su ID
-    paciente = get_object_or_404(Paciente, id=paciente_id)
-    
-    # 2. Buscamos sus citas (usamos 'citas' porque definimos related_name='citas' en el modelo)
-    # Las ordenamos por fecha (de la más reciente a la más antigua)
-    historial = paciente.citas.all().order_by('-fecha_hora')
-    
+    mi_clinica = obtener_clinica_usuario(request.user)
+
+    # SEGURIDAD SAAS:
+    # Usamos get_object_or_404 buscando por ID y también por CLÍNICA.
+    # Si alguien intenta cambiar el ID en la URL para ver un paciente de otra clínica,
+    # le saldrá Error 404 (No encontrado) en lugar de mostrar datos ajenos.
+    paciente = get_object_or_404(Paciente, id=paciente_id, clinica=mi_clinica)
+
+    # Historial de citas (también filtrado implícitamente porque el paciente ya es de la clínica)
+    historial = Cita.objects.filter(paciente=paciente).order_by('-fecha', '-hora')
+
     context = {
         'paciente': paciente,
         'historial': historial
     }
     return render(request, 'core/detalle_paciente.html', context)
-
-def redireccion_home(request):
-    return redirect('lista_pacientes')
