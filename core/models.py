@@ -21,13 +21,25 @@ class PerfilUsuario(models.Model):
 
 # 3. MODELOS DE NEGOCIO (Todos deben tener un "padre" Clínica)
 class Paciente(models.Model):
-    clinica = models.ForeignKey(Clinica, on_delete=models.CASCADE) # <--- OBLIGATORIO
+    clinica = models.ForeignKey(Clinica, on_delete=models.CASCADE)
+    
+    # Datos Personales Básicos
     nombre = models.CharField(max_length=100)
     rut = models.CharField(max_length=12)
-    telefono = models.CharField(max_length=20, blank=True)
+    fecha_nacimiento = models.DateField(null=True, blank=True) # Para calcular la edad
+    telefono = models.CharField(max_length=20, blank=True, verbose_name="Teléfono")
+    email = models.EmailField(blank=True, null=True)
+    direccion = models.CharField(max_length=200, blank=True, verbose_name="Dirección")
+    
+    # Datos Sociales / Estilo de Vida
+    ocupacion = models.CharField(max_length=100, blank=True, default="No especificada", verbose_name="Ocupación")
+    deporte = models.CharField(max_length=100, blank=True, default="Sedentario", verbose_name="Deporte/Actividad")
+    
+    # Datos Clínicos
+    diagnostico_ingreso = models.TextField(blank=True, default="En evaluación", verbose_name="Diagnóstico de Ingreso")
+    antecedentes = models.TextField(blank=True, default="Sin antecedentes", verbose_name="Antecedentes Médicos")
     
     class Meta:
-        # El RUT no puede repetirse DENTRO de la misma clínica, pero sí en otras
         unique_together = ['clinica', 'rut']
 
     def __str__(self):
