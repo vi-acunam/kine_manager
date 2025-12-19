@@ -39,6 +39,15 @@ class Paciente(models.Model):
     diagnostico_ingreso = models.TextField(blank=True, default="En evaluación", verbose_name="Diagnóstico de Ingreso")
     antecedentes = models.TextField(blank=True, default="Sin antecedentes", verbose_name="Antecedentes Médicos")
     
+    PREVISION_CHOICES = [
+        ('FONASA', 'Fonasa'),
+        ('ISAPRE', 'Isapre'),
+        ('PARTICULAR', 'Particular'),
+        ('OTRO', 'Otro / Convenio'),
+    ]
+
+    prevision = models.CharField(max_length=20, choices=PREVISION_CHOICES, default='PARTICULAR', verbose_name="Previsión")
+
     class Meta:
         unique_together = ['clinica', 'rut']
 

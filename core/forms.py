@@ -10,7 +10,9 @@ class PacienteForm(forms.ModelForm):
             'nombre', 'rut', 'fecha_nacimiento', 
             'telefono', 'email', 'direccion', 
             'ocupacion', 'deporte', 
-            'diagnostico_ingreso', 'antecedentes'
+            'diagnostico_ingreso', 'antecedentes',
+            'prevision'
+            
         ]
         
         widgets = {
@@ -22,6 +24,7 @@ class PacienteForm(forms.ModelForm):
             'direccion': forms.TextInput(attrs={'class': 'form-control'}),
             'ocupacion': forms.TextInput(attrs={'class': 'form-control'}),
             'deporte': forms.TextInput(attrs={'class': 'form-control'}),
+            'prevision': forms.Select(attrs={'class': 'form-select'}),
             
             # Textarea hace que el cuadro sea más grande (para escribir párrafos)
             'diagnostico_ingreso': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -33,3 +36,19 @@ class RegistroSaaSForm(forms.Form):
     email = forms.EmailField(label="Correo Electrónico", widget=forms.EmailInput(attrs={'class': 'form-control'}))
     password = forms.CharField(label="Contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     nombre_clinica = forms.CharField(label="Nombre de tu Centro/Clínica", max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+from .models import Tratamiento
+
+class TratamientoForm(forms.ModelForm):
+    class Meta:
+        model = Tratamiento
+        fields = ['nombre', 'precio']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Sesión Kinesiología'}),
+            'precio': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 35000'}),
+        }
+
+class StaffForm(forms.Form):
+    username = forms.CharField(label="Usuario", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(label="Contraseña", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    nombre_completo = forms.CharField(label="Nombre Real", widget=forms.TextInput(attrs={'class': 'form-control'}))

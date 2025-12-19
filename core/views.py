@@ -143,3 +143,52 @@ def registro_saas(request):
         form = RegistroSaaSForm()
 
     return render(request, 'core/registro.html', {'form': form})
+
+from .forms import TratamientoForm # <--- No olvides importarlo arriba
+
+@login_required
+def crear_tratamiento(request):
+    if request.method == 'POST':
+        form = TratamientoForm(request.POST)
+        if form.is_valid():
+            tratamiento = form.save(commit=False)
+            tratamiento.clinica = obtener_clinica_usuario(request.user) # Asignación SaaS
+            tratamiento.save()
+            return redirect('lista_pacientes') # O redirigir a una lista de precios
+    else:
+        form = TratamientoForm()
+    
+    return render(request, 'core/crear_tratamiento.html', {'form': form})
+
+from .forms import StaffForm # Importar
+
+@login_required
+def crear_staff(request):
+    # Seguridad: Solo admin puede crear staff
+    if not request.user.perfil.es_administrador:
+        return redirect('lista_pacientes')
+
+    if request.method == 'POST':
+        form = StaffForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            # 1. Crear User
+            nuevo_kine = User.objects.create_user(
+                username=data['username'],
+                password=data['password'],
+                first_name=data['nombre_completo']
+            )
+            nuevo_kine.is_staff = True # Dar acceso al admin panel si quieres
+            nuevo_kine.save()
+
+            # 2. Vincular a ESTA clínica
+            PerfilUsuario.objects.create(
+                usuario=nuevo_kine,
+                clinica=obtener_clinica_usuario(request.user),
+                es_administrador=False 
+            )
+            return redirect('lista_pacientes')
+    else:
+        form = StaffForm()
+
+    return render(request, 'core/crear_staff.html', {'form': form})

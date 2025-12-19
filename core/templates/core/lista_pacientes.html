@@ -4,21 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Pacientes</title>
+    <title>Lista de Pacientes - {{ nombre_clinica }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
 
-    <nav class="navbar navbar-dark bg-primary mb-4">
-        <div class="container d-flex justify-content-between">
-            <a class="navbar-brand" href="{% url 'lista_pacientes' %}">🏥 KineManager</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 px-3 shadow">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="{% url 'lista_pacientes' %}">
+                🏥 {{ nombre_clinica|default:"Mi Clínica" }}
+            </a>
 
-            <div>
-                {% if user.is_authenticated %}
-                <span class="text-white me-2">Hola, {{ user.username }}</span>
-                <a href="/admin/" class="btn btn-light btn-sm fw-bold">⚙️ Ir al Admin</a> {% else %}
-                <a href="/admin/" class="btn btn-outline-light btn-sm">🔒 Iniciar Sesión</a> {% endif %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav ms-auto align-items-center">
+
+                    <li class="nav-item me-3 text-white">
+                        <small>Hola, {{ user.username }}</small>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'crear_tratamiento' %}">➕ Tratamientos</a>
+                    </li>
+
+                    {% if user.perfil.es_administrador %}
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="{% url 'crear_staff' %}">👥 Equipo</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-danger btn-sm" href="{% url 'logout' %}">Salir</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
@@ -27,29 +49,30 @@
 
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="card text-white bg-success shadow">
+                <div class="card text-white bg-success shadow border-0">
                     <div class="card-body">
-                        <h5 class="card-title">💰 Caja Diaria</h5>
-                        <h2 class="card-text">${{ total_recaudado }}</h2>
+                        <h5 class="card-title opacity-75">💰 Caja Diaria (Hoy)</h5>
+                        <h2 class="card-text fw-bold">${{ total_recaudado }}</h2>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Pacientes Registrados</h2>
-            <a href="{% url 'crear_paciente' %}" class="btn btn-success btn-lg">
-        + Nuevo Paciente
+            <h2 class="text-secondary">Pacientes Registrados</h2>
+            <a href="{% url 'crear_paciente' %}" class="btn btn-success btn-lg shadow-sm">
+                👤 + Nuevo Paciente
             </a>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <table class="table table-hover">
-                    <thead class="table-light">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
                         <tr>
-                            <th>Nombre Completo</th>
+                            <th class="ps-4">Nombre Completo</th>
                             <th>RUT</th>
+                            <th>Previsión</th>
                             <th>Teléfono</th>
                             <th>Acciones</th>
                         </tr>
@@ -57,19 +80,23 @@
                     <tbody>
                         {% for p in pacientes %}
                         <tr>
-                            <td>
-                                <strong>{{ p.nombre_completo }}</strong>
+                            <td class="ps-4">
+                                <strong>{{ p.nombre }}</strong>
                             </td>
                             <td>{{ p.rut }}</td>
+                            <td><span class="badge bg-secondary">{{ p.get_prevision_display }}</span></td>
                             <td>{{ p.telefono }}</td>
                             <td>
-                                <a href="{% url 'detalle_paciente' p.id %}" class="btn btn-sm btn-outline-primary">Ver Ficha</a>
+                                <a href="{% url 'detalle_paciente' p.id %}" class="btn btn-sm btn-primary">
+                                    Ver Ficha 📄
+                                </a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">
-                                No hay pacientes registrados aún.
+                            <td colspan="5" class="text-center text-muted py-5">
+                                <h4>📭 No hay pacientes aún</h4>
+                                <p>Presiona el botón verde para crear el primero.</p>
                             </td>
                         </tr>
                         {% endfor %}
@@ -78,6 +105,8 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
