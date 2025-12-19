@@ -1,6 +1,7 @@
 # Asegúrate de importar get_object_or_404
 from django.shortcuts import render, get_object_or_404
 from .models import Paciente
+from django.shortcuts import redirect
 
 def lista_pacientes(request):
     pacientes = Paciente.objects.all().order_by('-id')
@@ -20,3 +21,6 @@ def detalle_paciente(request, paciente_id):
         'historial': historial
     }
     return render(request, 'core/detalle_paciente.html', context)
+
+def redireccion_home(request):
+    return redirect('lista_pacientes')
