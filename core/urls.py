@@ -1,10 +1,10 @@
 from django.urls import path
-from . import views
+from .views import registro_saas, lista_pacientes, detalle_paciente, redireccion_home
 
 urlpatterns = [
-    path('', views.redireccion_home, name='home'),
-    path('pacientes/', views.lista_pacientes, name='lista_pacientes'),
-    
+    path('', redireccion_home, name='home'),
+    path('pacientes/', lista_pacientes, name='lista_pacientes'),
+    path('registro/', registro_saas, name='registro'),
     # NUEVA LÍNEA: <int:paciente_id> captura el número (1, 2, 50, etc.)
-    path('pacientes/<int:paciente_id>/', views.detalle_paciente, name='detalle_paciente'),
+    path('pacientes/<int:paciente_id>/', detalle_paciente, name='detalle_paciente'),
 ]

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from datetime import date
 from .models import Paciente, Cita, Tratamiento
+from .forms import RegistroSaaSForm
 
 # --- FUNCIÓN AUXILIAR (La clave del SaaS) ---
 def obtener_clinica_usuario(user):
@@ -76,3 +77,38 @@ def detalle_paciente(request, paciente_id):
         'historial': historial
     }
     return render(request, 'core/detalle_paciente.html', context)
+
+def registro_saas(request):
+    if request.method == 'POST':
+        form = RegistroSaaSForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            
+            # PASO A: Crear la Clínica
+            nueva_clinica = Clinica.objects.create(
+                nombre=data['nombre_clinica'],
+                direccion="Dirección pendiente"
+            )
+            
+            # PASO B: Crear el Usuario
+            nuevo_usuario = User.objects.create_user(
+                username=data['username'],
+                email=data['email'],
+                password=data['password']
+            )
+            
+            # PASO C: Vincularlos (SaaS)
+            PerfilUsuario.objects.create(
+                usuario=nuevo_usuario,
+                clinica=nueva_clinica,
+                es_administrador=True # Es el dueño porque él la creó
+            )
+            
+            # PASO D: Iniciar sesión automáticamente y redirigir
+            login(request, nuevo_usuario)
+            return redirect('lista_pacientes')
+            
+    else:
+        form = RegistroSaaSForm()
+
+    return render(request, 'core/registro.html', {'form': form})

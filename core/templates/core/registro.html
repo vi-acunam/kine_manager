@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Crea tu cuenta - KineManager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h3>🚀 Comienza con KineManager</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="text-center text-muted">Crea tu clínica digital en segundos.</p>
+
+                        <form method="post">
+                            {% csrf_token %} {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">{{ field.label }}</label> {{ field }}
+                            </div>
+                            {% endfor %}
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Crear mi Clínica</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer text-center">
+                        <small>¿Ya tienes cuenta? <a href="/admin/">Inicia Sesión aquí</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
