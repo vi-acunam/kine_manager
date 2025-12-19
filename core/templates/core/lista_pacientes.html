@@ -11,8 +11,15 @@
 <body class="bg-light">
 
     <nav class="navbar navbar-dark bg-primary mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="#">🏥 KineManager</a>
+        <div class="container d-flex justify-content-between">
+            <a class="navbar-brand" href="{% url 'lista_pacientes' %}">🏥 KineManager</a>
+
+            <div>
+                {% if user.is_authenticated %}
+                <span class="text-white me-2">Hola, {{ user.username }}</span>
+                <a href="/admin/" class="btn btn-light btn-sm fw-bold">⚙️ Ir al Admin</a> {% else %}
+                <a href="/admin/" class="btn btn-outline-light btn-sm">🔒 Iniciar Sesión</a> {% endif %}
+            </div>
         </div>
     </nav>
 
