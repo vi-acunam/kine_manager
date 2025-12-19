@@ -1,6 +1,6 @@
 # Asegúrate de importar get_object_or_404
 from django.shortcuts import render, get_object_or_404
-from .models import Paciente
+from .models import Paciente, Cita, Tratamiento
 from django.shortcuts import redirect
 from django.db.models import Sum
 from datetime import date
