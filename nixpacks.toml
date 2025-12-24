@@ -7,9 +7,12 @@ nixPkgs = [
     "glib",
     "cairo",
     "gobject-introspection",
-    "gsettings-desktop-schemas"
+    "gsettings-desktop-schemas",
+    "dejavu-fonts",   # <--- NUEVO: Fuentes básicas
+    "freefont-ttf"    # <--- NUEVO: Más fuentes
 ]
 
+# ... el resto del archivo igual ...
 [phases.install]
 cmds = ["python -m venv .venv", ". .venv/bin/activate", "pip install -r requirements.txt"]
 
