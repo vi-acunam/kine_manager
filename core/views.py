@@ -420,45 +420,61 @@ def dashboard_analitica(request):
 
 @login_required
 def generar_pdf_paciente(request, paciente_id):
-    # Importación dentro de la función (como lo dejamos antes)
     import weasyprint
-    
     mi_clinica = obtener_clinica_usuario(request.user)
     paciente = get_object_or_404(Paciente, id=paciente_id, clinica=mi_clinica)
-    historial = Cita.objects.filter(paciente=paciente, estado='REALIZADA').order_by('-fecha')
 
-    # --- LÓGICA BLINDADA PARA EL LOGO ---
-    logo_src = ""
-    try:
-        if mi_clinica.logo and hasattr(mi_clinica.logo, 'path'):
-            # Verificamos si el archivo existe físicamente en el servidor
-            if os.path.exists(mi_clinica.logo.path):
-                # En Linux (Railway) las rutas ya empiezan con /, así que solo agregamos file://
-                # En Windows, esto también funciona si la ruta es absoluta
-                logo_src = 'file://' + mi_clinica.logo.path
+    # Solo queremos incluir citas REALIZADAS en el informe médico
+    historial = Cita.objects.filter(
+        paciente=paciente, 
+        estado='REALIZADA'
+    ).order_by('-fecha')
+
+# --- LÓGICA INFALIBLE PARA EL LOGO (BASE64) ---
+    logo_data = None
+    if mi_clinica.logo:
+        try:
+            # 1. Obtenemos la ruta física del archivo
+            ruta_imagen = mi_clinica.logo.path
+            
+            # 2. Verificamos que el archivo realmente exista en el disco
+            if os.path.exists(ruta_imagen):
+                # 3. Leemos el archivo y lo convertimos a texto (base64)
+                with open(ruta_imagen, "rb") as image_file:
+                    encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                    
+                    # 4. Detectamos si es PNG o JPG para armar la etiqueta correcta
+                    mime_type, _ = mimetypes.guess_type(ruta_imagen)
+                    if not mime_type: 
+                        mime_type = 'image/png' # Por defecto
+                        
+                    logo_data = f"data:{mime_type};base64,{encoded_string}"
             else:
-                print("⚠ El archivo de imagen no existe en la ruta:", mi_clinica.logo.path)
-    except Exception as e:
-        print(f"Error cargando imagen (El PDF se generará sin logo): {e}")
-        logo_src = ""
-    
-    # ------------------------------------
+                print(f"⚠ ALERTA: La imagen figura en la base de datos pero el archivo no está en: {ruta_imagen}")
 
+        except Exception as e:
+            print(f"Error cargando imagen: {e}")
+
+    # Preparamos el contexto (los datos que irán al papel)
     context = {
         'paciente': paciente,
         'historial': historial,
         'clinica': mi_clinica,
         'fecha_hoy': datetime.now(),
         'kinesiologo': request.user.get_full_name() or request.user.username,
-        'logo_src': logo_src  # Pasamos la variable segura
+        'logo_data': logo_data
     }
 
-    # ... resto del código igual ...
+    # 1. Renderizamos el HTML como un string
     html_string = render_to_string('core/reporte_pdf.html', context)
+
+    # 2. Generamos el PDF usando WeasyPrint
     html = weasyprint.HTML(string=html_string, base_url=request.build_absolute_uri())
     result = html.write_pdf()
-    
+
+    # 3. Devolvemos el archivo al navegador
     response = HttpResponse(content_type='application/pdf')
+    # 'inline' abre el PDF en el navegador. 'attachment' lo descarga directo.
     response['Content-Disposition'] = f'inline; filename=Ficha_{paciente.rut}.pdf'
     response.write(result)
     
