@@ -35,16 +35,3 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-from django.contrib.auth.models import User
-from django.http import HttpResponse
-
-def crear_admin_express(request):
-    # Verifica si ya existe para no dar error
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@example.com', 'admin123')
-        return HttpResponse("✅ ¡Listo! Usuario: admin | Clave: admin123")
-    return HttpResponse("El usuario admin ya existe.")
-
-urlpatterns += [
-    path('crear-super-admin/', crear_admin_express),
-]
