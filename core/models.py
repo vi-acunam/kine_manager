@@ -4,7 +4,9 @@ from django.contrib.auth.models import User
 # 1. EL "TENANT" (La Clínica/Cliente que te paga)
 class Clinica(models.Model):
     nombre = models.CharField(max_length=100)
-    direccion = models.CharField(max_length=200, blank=True)
+    direccion = models.CharField(max_length=200, blank=True, verbose_name="Dirección Comercial")
+    # CAMPO NUEVO:
+    logo = models.ImageField(upload_to='logos_clinicas/', blank=True, null=True)
     creado_en = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -48,6 +50,13 @@ class Paciente(models.Model):
 
     prevision = models.CharField(max_length=20, choices=PREVISION_CHOICES, default='PARTICULAR', verbose_name="Previsión")
 
+    detalle_prevision = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        verbose_name="Especifique Convenio"
+    )
+
     class Meta:
         unique_together = ['clinica', 'rut']
 
@@ -69,3 +78,45 @@ class Cita(models.Model):
     fecha = models.DateField()
     hora = models.TimeField()
     estado = models.CharField(max_length=20, default='AGENDADA')
+    evolucion = models.TextField(blank=True, default='', verbose_name="Evolución Clínica")
+
+    def monto_pagado(self):
+        # Suma todos los pagos registrados para esta cita
+        total = self.pagos.aggregate(models.Sum('monto'))['monto__sum'] or 0
+        return total
+
+    def deuda_pendiente(self):
+        if not self.tratamiento:
+            return 0
+        return self.tratamiento.precio - self.monto_pagado()
+
+    def estado_pago(self):
+        deuda = self.deuda_pendiente()
+        if deuda <= 0:
+            return 'PAGADO'
+        elif deuda == self.tratamiento.precio:
+            return 'PENDIENTE'
+        else:
+            return 'PARCIAL'
+
+# --- AL FINAL DE core/models.py ---
+
+class Pago(models.Model):
+    cita = models.ForeignKey(Cita, on_delete=models.CASCADE, related_name='pagos')
+    fecha = models.DateField(auto_now_add=True)
+    monto = models.IntegerField(verbose_name="Monto Pagado")
+    
+    METODOS_PAGO = [
+        ('EFECTIVO', 'Efectivo'),
+        ('TRANSFERENCIA', 'Transferencia'),
+        ('DEBITO', 'Débito/Crédito'),
+        ('BONO', 'Bono Fonasa/Isapre'),
+    ]
+    metodo = models.CharField(max_length=20, choices=METODOS_PAGO, default='EFECTIVO')
+
+    def __str__(self):
+        return f"${self.monto} - {self.metodo}"
+
+# --- AHORA VOLVEMOS A LA CLASE CITA (Modifícala) ---
+# Busca tu clase Cita y agrégale este método dentro de la clase:
+

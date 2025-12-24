@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Informe Clínico</title>
+    <style>
+        /* CONFIGURACIÓN DE PÁGINA (A4) */
+        
+        @page {
+            size: A4;
+            margin: 2cm;
+            @top-right {
+                content: "Página " counter(page);
+                font-size: 10px;
+                color: #888;
+            }
+        }
+        
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+            line-height: 1.4;
+            font-size: 12px;
+        }
+        /* CABECERA (DISEÑO DE DOS COLUMNAS CON TABLA) */
+        
+        .header-table {
+            width: 100%;
+            border-bottom: 3px solid #0d6efd;
+            /* Azul médico fuerte */
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .header-logo {
+            width: 30%;
+            vertical-align: middle;
+        }
+        
+        .header-logo img {
+            max-height: 80px;
+            max-width: 180px;
+            object-fit: contain;
+        }
+        
+        .header-info {
+            width: 70%;
+            text-align: right;
+            vertical-align: middle;
+        }
+        
+        .header-info h1 {
+            margin: 0;
+            color: #0d6efd;
+            font-size: 22px;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+        
+        .header-info p {
+            margin: 3px 0;
+            font-size: 11px;
+            color: #666;
+        }
+        /* TÍTULOS DE SECCIÓN */
+        
+        .section-title {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 13px;
+            border-left: 5px solid #0d6efd;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        /* TABLAS DE DATOS */
+        
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        
+        table.data-table td {
+            padding: 6px;
+            vertical-align: top;
+        }
+        
+        .label {
+            font-weight: bold;
+            color: #555;
+            width: 130px;
+            background-color: #fff;
+        }
+        
+        .value {
+            border-bottom: 1px dotted #ccc;
+        }
+        /* CAJAS DE EVOLUCIÓN (CITAS) */
+        
+        .cita-box {
+            border: 1px solid #e0e0e0;
+            background-color: #fff;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            page-break-inside: avoid;
+            /* Evita cortar una cita a la mitad */
+        }
+        
+        .cita-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #0d6efd;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .cita-body {
+            font-style: italic;
+            color: #444;
+            white-space: pre-line;
+            /* Respeta los párrafos escritos por el kine */
+            text-align: justify;
+        }
+        /* PIE DE PÁGINA / FIRMA */
+        
+        .footer-signature {
+            margin-top: 60px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 250px;
+            margin: 0 auto 5px auto;
+        }
+        /* ESTILO PARA CUANDO NO HAY LOGO */
+        
+        .no-logo-placeholder {
+            background: #eee;
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            text-align: center;
+            border-radius: 5px;
+            color: #999;
+            font-size: 10px;
+            border: 1px dashed #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td class="header-logo">
+                {% if logo_data %}
+                <img src="{{ logo_data }}" alt="Logo Clínica" style="max-height: 80px; width: auto;"> {% else %}
+                <div class="no-logo-placeholder">Sin Logo</div>
+                {% endif %}
+            </td>
+
+            <td class="header-info">
+                <h1>{{ clinica.nombre }}</h1>
+                <p>📍 {{ clinica.direccion|default:"Dirección no registrada" }}</p>
+                <p>📧 Contacto: {{ user.email }}</p>
+                <p>📅 Fecha de emisión: <strong>{{ fecha_hoy|date:"d \d\e F, Y" }}</strong></p>
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">Antecedentes del Paciente</div>
+
+    <table class="data-table">
+        <tr>
+            <td class="label">Nombre Completo:</td>
+            <td class="value"><strong>{{ paciente.nombre }}</strong></td>
+            <td class="label">RUT:</td>
+            <td class="value">{{ paciente.rut }}</td>
+        </tr>
+        <tr>
+            <td class="label">Edad:</td>
+            <td class="value">
+                {% if paciente.fecha_nacimiento %} {{ paciente.fecha_nacimiento|timesince }} {% else %} No registrada {% endif %}
+            </td>
+            <td class="label">Previsión:</td>
+            <td class="value">{{ paciente.get_prevision_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Ocupación:</td>
+            <td class="value">{{ paciente.ocupacion|default:"--" }}</td>
+            <td class="label">Deporte:</td>
+            <td class="value">{{ paciente.deporte|default:"--" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Diagnóstico:</td>
+            <td class="value" colspan="3">{{ paciente.diagnostico_ingreso }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">Evolución Clínica y Tratamientos</div>
+
+    {% for cita in historial %}
+    <div class="cita-box">
+        <div class="cita-header">
+            <span>FECHA: {{ cita.fecha|date:"d/m/Y" }} | HORA: {{ cita.hora|time:"H:i" }}</span>
+            <span>TRATAMIENTO: {{ cita.tratamiento.nombre|upper }}</span>
+        </div>
+        <div class="cita-body">
+            {% if cita.evolucion %} {{ cita.evolucion }} {% else %} (No se registraron notas clínicas para esta sesión). {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; color: #777; padding: 20px; border: 1px dashed #ccc;">
+        <p>No existen sesiones realizadas con registro clínico para este paciente.</p>
+    </div>
+    {% endfor %}
+
+    <div class="footer-signature">
+        <br><br>
+        <div class="signature-line"></div>
+        <strong>{{ kinesiologo }}</strong><br>
+        <small>Kinesiólogo(a) Tratante</small>
+        <br>
+        <small style="color: #999;">Documento generado electrónicamente por KineManager</small>
+    </div>
+
+</body>
+
+</html>

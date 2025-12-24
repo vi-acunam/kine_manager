@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>En Consulta - {{ paciente.nombre }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Un poco de CSS para que el área de texto ocupe buena altura */
+        
+        textarea {
+            height: 400px !important;
+            resize: none;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand">
+                🟢 En atención: <strong>{{ paciente.nombre }}</strong>
+            </span>
+            <span class="text-white-50">
+                {{ cita.tratamiento.nombre }} | {{ cita.hora|time:"H:i" }}
+            </span>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4 px-4">
+        <div class="row">
+
+            <div class="col-md-4">
+
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0">📋 Antecedentes</h6>
+                    </div>
+                    <div class="card-body small">
+                        <p class="mb-1"><strong>Diagnóstico:</strong> {{ paciente.diagnostico_ingreso }}</p>
+                        <p class="mb-1"><strong>Antecedentes:</strong> {{ paciente.antecedentes }}</p>
+                        <p class="mb-0"><strong>Deporte:</strong> {{ paciente.deporte }}</p>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">⏮️ Sesiones Anteriores</h6>
+                    </div>
+                    <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
+                        <ul class="list-group list-group-flush">
+                            {% for c in historial_previo %}
+                            <li class="list-group-item">
+                                <strong class="text-primary">{{ c.fecha|date:"d/m" }}:</strong>
+                                <p class="mb-0 small text-muted">{{ c.evolucion|default:"Sin notas..."|truncatechars:100 }}</p>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item text-muted text-center small">
+                                Es la primera sesión registrada.
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 text-primary">📝 Evolución de Hoy</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %} {{ form.evolucion }} {% if form.errors %}
+                            <div class="text-danger small">{{ form.errors }}</div>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <a href="{% url 'detalle_paciente' paciente.id %}" class="btn btn-outline-secondary">
+                                    Pausar / Salir sin terminar
+                                </a>
+                                <button type="submit" class="btn btn-success btn-lg px-5">
+                                    💾 Terminar Sesión
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

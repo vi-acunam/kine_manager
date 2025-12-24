@@ -1,14 +1,128 @@
-<h1>Panel de Control - {{ fecha_hoy }}</h1>
+<!DOCTYPE html>
+<html lang="es">
 
-<div style="background-color: #ffebee; padding: 20px; border-radius: 8px;">
-    <h2>⚠ Alertas de Dolor Alto ({{ cantidad_criticos }})</h2>
-    <ul>
-        {% for ficha in alertas %}
-        <li>
-            <strong>{{ ficha.cita.paciente.nombre_completo }}</strong> reportó nivel {{ ficha.nivel_dolor_eva }} (Kine: {{ ficha.cita.kinesiologo }})
-        </li>
-        {% empty %}
-        <li>No hay pacientes con dolor crítico hoy.</li>
-        {% endfor %}
-    </ul>
-</div>
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Gerencial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4 px-3 shadow">
+        <div class="container-fluid">
+            <span class="navbar-brand">📊 Inteligencia de Negocios</span>
+            <a href="{% url 'lista_pacientes' %}" class="btn btn-outline-light btn-sm">Volver a Inicio</a>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
+
+        <h4 class="mb-3 text-secondary">Resumen Financiero</h4>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card text-white bg-success shadow h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title opacity-75">INGRESO ACUMULADO (ESTE MES)</h6>
+                        <h1 class="display-4 fw-bold">${{ ingresos_mes }}</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-white bg-danger shadow h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title opacity-75">POR COBRAR (DEUDA TOTAL)</h6>
+                        <h1 class="display-4 fw-bold">${{ deuda_total }}</h1>
+                        <small>Dinero pendiente de cobro</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mb-3 text-secondary">Métricas Operativas</h4>
+        <div class="row">
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-white font-weight-bold">
+                        Efectividad de Citas
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartEstados"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow">
+                    <div class="card-header bg-white font-weight-bold">
+                        Top 5 Servicios Más Vendidos
+                    </div>
+                    <div class="card-body">
+                        <canvas id="chartTop"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 1. CONFIGURACIÓN GRÁFICO DE TORTA (ESTADOS)
+        const ctxEstados = document.getElementById('chartEstados').getContext('2d');
+        new Chart(ctxEstados, {
+            type: 'doughnut',
+            data: {
+                labels: {
+                    {
+                        labels_estado | safe
+                    }
+                }, // Datos desde Django
+                datasets: [{
+                    data: {
+                        {
+                            data_estado_count | safe
+                        }
+                    },
+                    backgroundColor: ['#ffc107', '#28a745', '#dc3545'], // Amarillo, Verde, Rojo
+                    hoverOffset: 4
+                }]
+            }
+        });
+
+        // 2. CONFIGURACIÓN GRÁFICO DE BARRAS (TOP TRATAMIENTOS)
+        const ctxTop = document.getElementById('chartTop').getContext('2d');
+        new Chart(ctxTop, {
+            type: 'bar',
+            data: {
+                labels: {
+                    {
+                        labels_top | safe
+                    }
+                },
+                datasets: [{
+                    label: 'Cantidad de Citas',
+                    data: {
+                        {
+                            data_top | safe
+                        }
+                    },
+                    backgroundColor: '#0d6efd', // Azul Bootstrap
+                    borderColor: '#0a58ca',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

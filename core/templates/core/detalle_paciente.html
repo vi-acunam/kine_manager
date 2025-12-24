@@ -10,10 +10,10 @@
 
 <body class="bg-light">
 
-    <nav class="navbar navbar-dark bg-primary mb-4">
+    <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{% url 'lista_pacientes' %}">⬅ Volver a la Lista</a>
-            <span class="navbar-text text-white">Ficha Clínica Digital</span>
+            <span class="navbar-text text-white fw-bold">Ficha Clínica Digital</span>
         </div>
     </nav>
 
@@ -21,12 +21,18 @@
         <div class="row">
 
             <div class="col-md-4 mb-4">
-                <div class="card shadow">
+                <div class="card shadow border-0">
                     <div class="card-header bg-dark text-white">
                         <h5 class="mb-0">👤 Datos Personales</h5>
                     </div>
                     <div class="card-body">
-                        <h3>{{ paciente.nombre }}</h3>
+
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="mb-0">{{ paciente.nombre }}</h3>
+                            <a href="{% url 'editar_paciente' paciente.id %}" class="btn btn-sm btn-outline-secondary" title="Modificar datos personales">
+                                ✏️ Editar
+                            </a>
+                        </div>
 
                         <span class="badge bg-info text-dark mb-3">
                             {{ paciente.get_prevision_display|default:"Particular" }}
@@ -34,64 +40,118 @@
 
                         <hr>
 
-                        <p class="mb-1"><strong>RUT:</strong> {{ paciente.rut }}</p>
+                        <p class="mb-2"><strong>RUT:</strong> {{ paciente.rut }}</p>
 
-                        <p class="mb-1"><strong>Edad:</strong> {% if paciente.fecha_nacimiento %} {{ paciente.fecha_nacimiento|timesince }} {% else %} No registrada {% endif %}
+                        <p class="mb-2"><strong>Edad:</strong> {% if paciente.fecha_nacimiento %} {{ paciente.fecha_nacimiento|timesince }} {% else %} No registrada {% endif %}
                         </p>
 
-                        <p class="mb-1"><strong>Ocupación:</strong> {{ paciente.ocupacion }}</p>
-                        <p class="mb-1"><strong>Deporte:</strong> {{ paciente.deporte }}</p>
+                        <p class="mb-2"><strong>Ocupación:</strong> {{ paciente.ocupacion|default:"--" }}</p>
+                        <p class="mb-2"><strong>Deporte:</strong> {{ paciente.deporte|default:"--" }}</p>
 
                         <hr>
 
-                        <p class="mb-1"><strong>📞 Teléfono:</strong> {% if paciente.telefono %}
-                            <a href="tel:{{ paciente.telefono }}">{{ paciente.telefono }}</a> {% else %} -- {% endif %}
+                        <p class="mb-2"><strong>📞 Teléfono:</strong> {% if paciente.telefono %}
+                            <a href="tel:{{ paciente.telefono }}" class="text-decoration-none">{{ paciente.telefono }}</a> {% else %} -- {% endif %}
                         </p>
-                        <p class="mb-1"><strong>📧 Email:</strong> {{ paciente.email|default:"--" }}</p>
-                        <p class="mb-1"><strong>📍 Dirección:</strong> {{ paciente.direccion|default:"--" }}</p>
+                        <p class="mb-2"><strong>📧 Email:</strong> {{ paciente.email|default:"--" }}</p>
+                        <p class="mb-2"><strong>📍 Dirección:</strong> {{ paciente.direccion|default:"--" }}</p>
 
-                        <div class="alert alert-primary mt-3">
-                            <strong>🩺 Diagnóstico Ingreso:</strong><br> {{ paciente.diagnostico_ingreso|linebreaks }}
+                        <div class="alert alert-primary mt-3 small">
+                            <strong>🩺 Diagnóstico Ingreso:</strong><br> {{ paciente.diagnostico_ingreso|linebreaksbr }}
                         </div>
 
-                        <div class="alert alert-warning mt-2">
-                            <strong>⚠ Antecedentes:</strong><br> {{ paciente.antecedentes|linebreaks }}
-                        </div>
-
-                        <div class="d-grid gap-2 mt-3">
-                            <button class="btn btn-outline-secondary btn-sm" disabled>✏ Editar Datos (Próximamente)</button>
+                        <div class="alert alert-warning mt-2 small">
+                            <strong>⚠ Antecedentes:</strong><br> {{ paciente.antecedentes|linebreaksbr }}
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-8">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">Historial de Tratamientos</h4>
-                    <button class="btn btn-success btn-sm">+ Nueva Evolución</button>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 text-secondary">Historial Clínico</h4>
+
+                    <div>
+                        <a href="{% url 'generar_pdf_paciente' paciente.id %}" target="_blank" class="btn btn-outline-danger me-2 shadow-sm">
+                            📄 Descargar Ficha PDF
+                        </a>
+
+                        <a href="{% url 'agendar_cita' paciente.id %}" class="btn btn-success shadow-sm">
+                            📅 + Agendar Cita
+                        </a>
+                    </div>
                 </div>
 
                 {% for cita in historial %}
-                <div class="card mb-3 shadow-sm border-start border-4 border-primary">
+                <div class="card mb-3 shadow-sm border-start border-4 {% if cita.estado == 'ANULADA' %}border-danger{% elif cita.estado == 'REALIZADA' %}border-success{% else %}border-primary{% endif %}">
+
                     <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="card-title text-primary">
-                                {{ cita.fecha|date:"d M Y" }} - {{ cita.hora|time:"H:i" }}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title text-primary mb-0">
+                                {{ cita.fecha|date:"d M Y" }} <small class="text-muted">| {{ cita.hora|time:"H:i" }} hrs</small>
                             </h5>
-                            <span class="badge bg-secondary">{{ cita.estado }}</span>
+
+                            {% if cita.estado == 'REALIZADA' %}
+                            <span class="badge bg-success">✅ Realizada</span> {% elif cita.estado == 'ANULADA' %}
+                            <span class="badge bg-danger">🚫 Anulada</span> {% else %}
+                            <span class="badge bg-warning text-dark">📅 Agendada</span> {% endif %}
                         </div>
 
-                        <p class="mb-1"><strong>Tratamiento:</strong> {{ cita.tratamiento.nombre }}</p>
-                        <p class="mb-2"><strong>Precio:</strong> ${{ cita.tratamiento.precio }}</p>
+                        <p class="mb-1 text-dark fw-bold">{{ cita.tratamiento.nombre }}</p>
+                        <p class="mb-2 text-muted">Valor Total: ${{ cita.tratamiento.precio }}</p>
 
-                        <div class="mt-2 text-muted fst-italic small">
-                            (Detalles de la evolución clínica aquí)
+                        <hr class="my-2">
+
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-2 bg-light rounded">
+                            <div>
+                                {% if cita.estado_pago == 'PAGADO' %}
+                                <span class="badge bg-success">💲 Pagado Total</span> {% elif cita.estado_pago == 'PARCIAL' %}
+                                <span class="badge bg-warning text-dark">⚠️ Abono Parcial</span>
+                                <small class="text-danger fw-bold ms-1">(Faltan: ${{ cita.deuda_pendiente }})</small> {% else %}
+                                <span class="badge bg-danger">🔴 Sin Pago</span>
+                                <small class="text-danger fw-bold ms-1">(Debe: ${{ cita.deuda_pendiente }})</small> {% endif %}
+                            </div>
+
+                            {% if cita.estado != 'ANULADA' and cita.estado_pago != 'PAGADO' %}
+                            <a href="{% url 'registrar_pago' cita.id %}" class="btn btn-sm btn-outline-success">
+                                💰 Registrar Pago
+                            </a> {% endif %}
                         </div>
+
+                        <div class="d-grid gap-2">
+                            {% if cita.estado == 'AGENDADA' %}
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'modo_consulta' cita.id %}" class="btn btn-primary fw-bold flex-grow-1">
+                                        ▶ INICIAR ATENCIÓN
+                                    </a>
+                                <a href="{% url 'cambiar_estado_cita' cita.id 'ANULADA' %}" class="btn btn-outline-danger" onclick="return confirm('¿Seguro que deseas anular esta cita?');">
+                                        🚫 Anular
+                                    </a>
+                            </div>
+
+                            {% elif cita.estado == 'REALIZADA' %}
+                            <div class="bg-white p-3 border rounded">
+                                <small class="text-muted fw-bold d-block mb-1">📝 Nota de Evolución:</small>
+                                <p class="mb-0 small fst-italic text-dark">
+                                    {{ cita.evolucion|default:"(Sin registro escrito...)"|linebreaksbr }}
+                                </p>
+                            </div>
+                            <div class="text-end mt-2">
+                                <a href="{% url 'modo_consulta' cita.id %}" class="btn btn-sm btn-link text-decoration-none">
+                                        ✏️ Editar Nota Clínica
+                                    </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
                     </div>
                 </div>
                 {% empty %}
-                <div class="alert alert-light text-center border">
-                    <p class="mb-0">📂 Este paciente no tiene citas registradas aún.</p>
+                <div class="alert alert-secondary text-center py-5">
+                    <h4>📭 Paciente Nuevo</h4>
+                    <p class="mb-0">No hay historial de citas registrado.</p>
+                    <a href="{% url 'agendar_cita' paciente.id %}" class="btn btn-primary mt-3">Agendar Primera Cita</a>
                 </div>
                 {% endfor %}
 
@@ -99,6 +159,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

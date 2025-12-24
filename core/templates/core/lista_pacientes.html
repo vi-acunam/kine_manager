@@ -31,6 +31,24 @@
                         <a class="nav-link text-white" href="{% url 'crear_tratamiento' %}">➕ Tratamientos</a>
                     </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link text-white fw-bold" href="{% url 'ver_calendario' %}">
+                            📅 Agenda
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="{% url 'dashboard' %}">
+                            📈 Dashboard
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'configuracion_clinica' %}">
+                            ⚙️ Mi Clínica
+                        </a>
+                    </li>
+
                     {% if user.perfil.es_administrador %}
                     <li class="nav-item">
                         <a class="nav-link text-warning" href="{% url 'crear_staff' %}">👥 Equipo</a>
@@ -38,7 +56,10 @@
                     {% endif %}
 
                     <li class="nav-item ms-2">
-                        <a class="btn btn-danger btn-sm" href="{% url 'logout' %}">Salir</a>
+                        <form method="post" action="{% url 'logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Salir</button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -84,7 +105,10 @@
                                 <strong>{{ p.nombre }}</strong>
                             </td>
                             <td>{{ p.rut }}</td>
-                            <td><span class="badge bg-secondary">{{ p.get_prevision_display }}</span></td>
+                            <td>
+                                <span class="badge bg-secondary">{{ p.get_prevision_display }}</span> {% if p.detalle_prevision %}
+                                <br><small class="text-muted" style="font-size: 10px;">{{ p.detalle_prevision }}</small> {% endif %}
+                            </td>
                             <td>{{ p.telefono }}</td>
                             <td>
                                 <a href="{% url 'detalle_paciente' p.id %}" class="btn btn-sm btn-primary">

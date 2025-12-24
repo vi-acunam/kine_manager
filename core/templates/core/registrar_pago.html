@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Pago</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">💰 Registrar Pago</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-secondary">
+                            <strong>Tratamiento:</strong> {{ cita.tratamiento.nombre }}<br>
+                            <strong>Valor Total:</strong> ${{ cita.tratamiento.precio }}<br>
+                            <strong>Ya pagado:</strong> ${{ cita.monto_pagado }}<br>
+                            <h4 class="mt-2 text-danger">Deuda: ${{ deuda }}</h4>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Monto a abonar hoy</label> {{ form.monto }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Método de Pago</label> {{ form.metodo }}
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 btn-lg">Confirmar Pago</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
