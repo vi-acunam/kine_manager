@@ -1,38 +1,36 @@
-# 1. Usamos Python 3.11 sobre una base Debian (Linux estándar)
-FROM python:3.11-slim
+# 1. Usamos la versión "Bookworm" (Estable) para que no cambien los nombres de paquetes
+FROM python:3.11-slim-bookworm
 
-# 2. EVITAR QUE PYTHON GENERE ARCHIVOS .PYC Y SALIDA SIN BUFFER
+# 2. Configuración de Python
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# 3. INSTALAR LAS LIBRERÍAS DE SISTEMA (Pango, GDK, Fuentes)
-# Esta es la parte mágica que arregla tu error
+# 3. INSTALAR DEPENDENCIAS (Nombres corregidos para Debian Bookworm)
 RUN apt-get update && apt-get install -y \
-    python3-pip \
     python3-cffi \
     python3-brotli \
     libpango-1.0-0 \
     libpangoft2-1.0-0 \
-    libharfbuzz-0b \
-    libgdk-pixbuf2.0-0 \
+    libharfbuzz0b \
+    libgdk-pixbuf-2.0-0 \
     libffi-dev \
     shared-mime-info \
     fonts-dejavu \
     fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. CREAR CARPETA DE TRABAJO
+# 4. CARPETA DE TRABAJO
 WORKDIR /app
 
-# 5. INSTALAR LIBRERÍAS DE PYTHON (Django, WeasyPrint, etc.)
+# 5. INSTALAR LIBRERÍAS DE PYTHON
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 6. COPIAR EL RESTO DEL CÓDIGO
+# 6. COPIAR PROYECTO
 COPY . .
 
-# 7. RECOLECTAR ARCHIVOS ESTÁTICOS (CSS/JS)
+# 7. ARCHIVOS ESTÁTICOS
 RUN python manage.py collectstatic --noinput
 
-# 8. COMANDO DE INICIO (Railway inyecta la variable PORT automáticamente)
+# 8. INICIAR SERVIDOR
 CMD gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
