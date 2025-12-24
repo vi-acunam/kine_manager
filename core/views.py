@@ -10,7 +10,6 @@ from .forms import RegistroSaaSForm
 from .forms import PacienteForm # <--- Importa el nuevo form
 from django.template.loader import render_to_string
 from django.http import HttpResponse
-import weasyprint
 import base64
 import os
 import mimetypes
@@ -421,6 +420,7 @@ def dashboard_analitica(request):
 
 @login_required
 def generar_pdf_paciente(request, paciente_id):
+    import weasyprint
     mi_clinica = obtener_clinica_usuario(request.user)
     paciente = get_object_or_404(Paciente, id=paciente_id, clinica=mi_clinica)
 
