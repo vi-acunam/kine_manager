@@ -7,6 +7,7 @@ ENV PYTHONUNBUFFERED 1
 
 # 3. INSTALAR DEPENDENCIAS (Nombres corregidos para Debian Bookworm)
 RUN apt-get update && apt-get install -y \
+    python3-pip \
     python3-cffi \
     python3-brotli \
     libpango-1.0-0 \
